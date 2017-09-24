@@ -15,9 +15,9 @@ defmodule Pooly.Server do
     GenServer.start_link(__MODULE__, [sup, pool_config], name: __MODULE__)
   end
 
-  def checkout do
-    GenServer.call(__MODULE__, :checkout)
-  end
+  def checkout, do: GenServer.call(__MODULE__, :checkout)
+
+  def checkin(worker_pid), do: GenServer.cast(__MODULE__, {:checkin, worker_pid})
 
   # Callbacks
 
@@ -62,6 +62,18 @@ defmodule Pooly.Server do
       [] ->
         # all workers checked out
         {:reply, :noproc, state}
+    end
+  end
+
+  def handle_cast({:checkin, worker}, %{workers: workers, monitors: monitors} = state) do
+    case :ets.lookup(monitors, worker) do
+      [{pid, ref}] ->
+        # TODO this looks like a prime candidate to refactor using `with`
+        true = Process.demonitor(ref)
+        true = :ets.delete(monitors, pid)
+        {:noreply, %{state | workers: [pid|workers]}}
+      [] ->
+        {:noreply, state}
     end
   end
 
