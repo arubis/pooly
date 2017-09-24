@@ -58,4 +58,22 @@ defmodule Pooly.Server do
     opts = [restart: :temporary]
     supervise(Pooly.WorkerSupervisor, [mfa], opts)
   end
+
+  defp prepopulate(size, sup), do: prepopulate(size, sup, [])
+  defp prepopulate(size, _sup, workers) when size < 1, do: workers
+  defp prepopulate(size, sup, workers) do
+    prepopulate(size-1, sup, [new_worker(sup) | workers])
+  end
+
+  defp new_worker(sup) do
+    # n.b. `sup` here receives worker_sup, so we're adding children
+    # to `Pooly.WorkerSupervisor`. This has already had its child_spec
+    # defined with start_child(supervisor_pid, child_spec) in
+    # handle_info(:start_worker_supervisor) and uses a `:simple_one_for_one`
+    # restart strategy, so the child spec is predefined. Instead, we use
+    # the alternate start_child/2(supervisor, [args]) syntax.
+    # Cf. h(Supervisor.start_child/2).
+    {:ok, worker} = Supervisor.start_child(sup, [[]])
+    worker
+  end
 end
