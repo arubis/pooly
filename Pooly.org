@@ -1,0 +1,19 @@
+* Pooly
+** TODO Version 1
+    - Supports a /single/ pool
+    - Supports a /fixed/ number of workers
+    - No recovery when consumer and/or worker processes fail
+** TODO Version 2
+    - Supports a /single/ pool
+    - Supports a /fixed/ number of workers
+    - Recovery when consumer and/or worker processes fail
+** TODO Version 3
+    - Supports /multiple/ pools
+    - Supports a /variable/ number of workers
+** TODO Version 4
+    - Supports /multiple/ pools
+    - Supports a /variable/ number of workers
+    - Variable-sized pool allows for worker overflow
+    - Queuing for consumer processes when all workers are busy
+** TODO Version 5 (not in book)
+    - Rewrite to use Elixir 1.5-compatible module Supervisor
