@@ -1,21 +1,8 @@
 # Pooly
 
-**TODO: Add description**
+Implementation of Pooly (similar to Poolboy) from _The Little Elixir & OTP Handbook_.
 
-## Installation
+Intent is to pass through each iteration from the book, then refactor into Elixir 1.5-styled module supervisors.
+Progress tracked in `Pooly.org`.
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `pooly` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:pooly, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/pooly](https://hexdocs.pm/pooly).
-
+I'm not doing anything fancy with Hex or ExDoc here, so don't expect them to generate usable installations/documentation.
