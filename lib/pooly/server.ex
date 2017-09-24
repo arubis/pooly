@@ -3,9 +3,9 @@ defmodule Pooly.Server do
   import Supervisor.Spec
 
   defmodule State do
-    defstruct [:sup, :worker_sup, :size, :workers, :mfa]
+    defstruct [:sup, :worker_sup, :size, :workers, :monitors, :mfa]
     @type t :: %State{sup: pid, worker_sup: pid, size: non_neg_integer,
-                      workers: _TODO, mfa: {any, any, any}}
+                      workers: list, monitors: list, mfa: {any, any, any}}
   end
 
   # API
@@ -15,12 +15,17 @@ defmodule Pooly.Server do
     GenServer.start_link(__MODULE__, [sup, pool_config], name: __MODULE__)
   end
 
+  def checkout do
+    GenServer.call(__MODULE__, :checkout)
+  end
+
   # Callbacks
 
   ## invoked upon GenServer.start_link/3
   ## stores the invoking (top-level) supervisor's pid in state, then inits pool
   def init([sup, pool_config]) when is_pid(sup) do
-    init(pool_config, %State{sup: sup})
+    monitors = :ets.new(:monitors, [:private])
+    init(pool_config, %State{sup: sup, monitors: monitors})
   end
 
   ## Valid `pool_config`: `[mfa: {SampleWorker, :start_link, []}, size: 5]`
@@ -46,6 +51,20 @@ defmodule Pooly.Server do
     {:ok, state}
   end
 
+  def handle_call(:checkout, {from_pid, _ref}, %{workers: workers, monitors: monitors} = state) do
+    case workers do
+      [ worker|tail ] ->
+        # exist un-checked-out workers in pool
+        ref = Process.monitor(from_pid)
+        true = :ets.insert(monitors, {worker, ref})
+        {:reply, worker, %{state | workers: tail}}
+
+      [] ->
+        # all workers checked out
+        {:reply, :noproc, state}
+    end
+  end
+
   def handle_info(:start_worker_supervisor, state = %{sup: sup, mfa: mfa, size: size}) do
     {:ok, worker_sup} = Supervisor.start_child(sup, supervisor_spec(mfa))
     workers = prepopulate(size, worker_sup)
@@ -56,7 +75,7 @@ defmodule Pooly.Server do
 
   defp supervisor_spec(mfa) do
     opts = [restart: :temporary]
-    supervise(Pooly.WorkerSupervisor, [mfa], opts)
+    supervisor(Pooly.WorkerSupervisor, [mfa], opts)
   end
 
   defp prepopulate(size, sup), do: prepopulate(size, sup, [])
