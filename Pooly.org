@@ -1,5 +1,6 @@
 * Pooly
-** TODO Version 1
+** DONE Version 1
+   CLOSED: [2017-09-24 Sun 17:46]
     - Supports a /single/ pool
     - Supports a /fixed/ number of workers
     - No recovery when consumer and/or worker processes fail

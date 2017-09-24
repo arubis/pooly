@@ -1,6 +1,6 @@
 # Pooly
 
-Implementation of Pooly (similar to Poolboy) from _The Little Elixir & OTP Handbook_.
+Implementation of Pooly (similar to [Poolboy](https://github.com/devinus/poolboy)) from [_The Little Elixir & OTP Handbook_](https://www.manning.com/books/the-little-elixir-and-otp-guidebook).
 
 Intent is to pass through each iteration from the book, then refactor into Elixir 1.5-styled module supervisors.
 Progress tracked in `Pooly.org`.
