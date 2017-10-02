@@ -4,7 +4,8 @@
     - Supports a /single/ pool
     - Supports a /fixed/ number of workers
     - No recovery when consumer and/or worker processes fail
-** TODO Version 2
+** DONE Version 2
+   CLOSED: [2017-10-01 Sun 19:37]
     - Supports a /single/ pool
     - Supports a /fixed/ number of workers
     - Recovery when consumer and/or worker processes fail
@@ -18,3 +19,5 @@
     - Queuing for consumer processes when all workers are busy
 ** TODO Version 5 (not in book)
     - Rewrite to use Elixir 1.5-compatible module Supervisor
+    - Clean up `true = (whatever)` and `case` to use `with`
+
