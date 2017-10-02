@@ -26,6 +26,7 @@ defmodule Pooly.Server do
   ## invoked upon GenServer.start_link/3
   ## stores the invoking (top-level) supervisor's pid in state, then inits pool
   def init([sup, pool_config]) when is_pid(sup) do
+    Process.flag(:trap_exit, true)
     monitors = :ets.new(:monitors, [:private])
     init(pool_config, %State{sup: sup, monitors: monitors})
   end
@@ -87,6 +88,32 @@ defmodule Pooly.Server do
     {:ok, worker_sup} = Supervisor.start_child(sup, supervisor_spec(mfa))
     workers = prepopulate(size, worker_sup)
     {:noreply, %{state | worker_sup: worker_sup, workers: workers}}
+  end
+
+  def handle_info({:DOWN, ref, _, _, _}, state = %{monitors: monitors, workers: workers}) do
+    case :ets.match(monitors, {:"$1", ref}) do
+      [[pid]] ->
+        true = :ets.delete(monitors, pid)
+        new_state = %{state | workers: [pid|workers]}
+        {:noreply, new_state}
+
+      [[]] ->
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:EXIT, pid, _reason},
+    state = %{monitors: monitors, workers: workers, worker_sup: worker_sup}) do
+    case :etc.lookup(monitors, pid) do
+      [{pid, ref}] ->
+        true = Process.demonitor(ref)
+        true = :ets.delete(monitors, pid)
+        new_state = %{state | workers: [new_worker(worker_sup)|workers]}
+        {:noreply, new_state}
+
+      [{}] ->
+        {:noreply, state}
+    end
   end
 
   # Private Functions
