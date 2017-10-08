@@ -28,6 +28,8 @@ defmodule Pooly.PoolServer do
     GenServer.call(name(pool_name), :status)
   end
 
+  def terminate(_reason, _state), do: :ok
+
   # Callbacks
 
   def init([pool_sup, pool_config]) when is_pid(pool_sup) do
@@ -60,7 +62,7 @@ defmodule Pooly.PoolServer do
 
   def handle_call(:checkout, {from_pid, _ref}, %{workers: workers, monitors: monitors} = state) do
     case workers do
-      [ worker|tail ] ->
+      [worker|tail] ->
         # exist un-checked-out workers in pool
         ref = Process.monitor(from_pid)
         true = :ets.insert(monitors, {worker, ref})
@@ -72,7 +74,7 @@ defmodule Pooly.PoolServer do
     end
   end
 
-  def handle_call({:status, _from, %{workers: workers, monitors: monitors} = state}) do
+  def handle_call(:status, _from, %{workers: workers, monitors: monitors} = state) do
     {:reply, {length(workers), :ets.info(monitors, :size)}, state}
   end
 
@@ -111,7 +113,7 @@ defmodule Pooly.PoolServer do
       [{pid, ref}] ->
         true = Process.demonitor(ref)
         true = :ets.delete(monitors, pid)
-        new_state = %{state | workers: [new_workers(pool_sup)|workers]}
+        new_state = %{state | workers: [new_worker(pool_sup)|workers]}
         {:noreply, new_state}
 
       _ ->
@@ -119,7 +121,9 @@ defmodule Pooly.PoolServer do
     end
   end
 
-  def terminate(_reason, _state), do: :ok
+  def handle_info({:EXIT, worker_sup, reason}, state = %{worker_sup: worker_sup}) do
+    {:stop, reason, state}
+  end
 
   # Private functions
 

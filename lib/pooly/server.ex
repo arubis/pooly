@@ -36,7 +36,7 @@ defmodule Pooly.Server do
 
   defp supervisor_spec(pool_config) do
     # Supervisor spec must be unique, so vary the ID field:
-    opts = [id: :"%{pool_config[:name]}Supervisor"]
+    opts = [id: :"#{pool_config[:name]}Supervisor"]
     supervisor(Pooly.PoolSupervisor, [pool_config], opts)
   end
 
