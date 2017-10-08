@@ -5,7 +5,6 @@ defmodule Pooly.PoolServer do
   defmodule State do
     defstruct pool_sup: nil, worker_sup: nil, monitors: nil, size: nil,
       workers: nil, name: nil, mfa: nil
-    # untested:
     @type t :: %State{pool_sup: pid, worker_sup: pid, size: non_neg_integer,
                       workers: list, name: list, monitors: list, mfa: {any, any, any}}
   end
@@ -28,8 +27,6 @@ defmodule Pooly.PoolServer do
     GenServer.call(name(pool_name), :status)
   end
 
-  def terminate(_reason, _state), do: :ok
-
   # Callbacks
 
   def init([pool_sup, pool_config]) when is_pid(pool_sup) do
@@ -38,7 +35,7 @@ defmodule Pooly.PoolServer do
     init(pool_config, %State{pool_sup: pool_sup, monitors: monitors})
   end
 
-  ## Valid `pool_config`: `[name, mfa: {SampleWorker, :start_link, []}, size: 5]`
+  ## Valid `pool_config`: `[name, mfa: {module, function, [args]}, size: 5]`
   ## Note it's an _ordered_ list, so we can h|t our way through it and know
   ## which keys to expect.
   ##
@@ -50,15 +47,13 @@ defmodule Pooly.PoolServer do
   def init([{:mfa, mfa}|tail], state),   do: init(tail, %{state | mfa: mfa})
   ## Pattern match for `size` options:
   def init([{:size, size}|tail], state), do: init(tail, %{state | size: size})
-
   ## Options list empty, so assume state is built up
   def init([], state) do
     send(self(), :start_worker_supervisor)
     {:ok, state}
   end
-
   ## Drop any other options:
-  def init([_|tail], state),             do: init(tail, state)
+  def init([_|tail], state), do: init(tail, state)
 
   def handle_call(:checkout, {from_pid, _ref}, %{workers: workers, monitors: monitors} = state) do
     case workers do
@@ -108,6 +103,11 @@ defmodule Pooly.PoolServer do
     end
   end
 
+  ### Pattern matching order matters!!! Fought confusion for a while here.
+  def handle_info({:EXIT, worker_sup, reason}, state = %{worker_sup: worker_sup}) do
+    {:stop, reason, state}
+  end
+
   def handle_info({:EXIT, pid, _reason}, state = %{monitors: monitors, workers: workers, pool_sup: pool_sup}) do
     case :ets.lookup(monitors, pid) do
       [{pid, ref}] ->
@@ -121,9 +121,7 @@ defmodule Pooly.PoolServer do
     end
   end
 
-  def handle_info({:EXIT, worker_sup, reason}, state = %{worker_sup: worker_sup}) do
-    {:stop, reason, state}
-  end
+  def terminate(_reason, _state), do: :ok
 
   # Private functions
 
@@ -137,11 +135,16 @@ defmodule Pooly.PoolServer do
 
   defp new_worker(sup) do
     {:ok, worker} = Supervisor.start_child(sup, [[]])
+    Process.link(worker)   # Pointed out in repo; didn't see ref here in text
     worker
   end
 
+  ### revisit?
   defp supervisor_spec(name, mfa) do
-    opts = [id: name <> "WorkerSupervisor", restart: :temporary]
+    # NOTE: The reason this is set to temporary is because the WorkerSupervisor
+    #       is started by the PoolServer. They restart in concert due to the
+    #       `Process.link` to PoolServer in WorkerSupervisor.
+    opts = [id: name <> "WorkerSupervisor", shutdown: 10000, restart: :temporary]
     supervisor(Pooly.WorkerSupervisor, [self(), mfa], opts)
   end
 
