@@ -20,4 +20,5 @@
 ** TODO Version 5 (not in book)
     - Rewrite to use Elixir 1.5-compatible module Supervisor
     - Clean up `true = (whatever)` and `case` to use `with`
+    - Ditch any remaining HashDict's for Maps
 
