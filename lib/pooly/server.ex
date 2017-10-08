@@ -8,7 +8,8 @@ defmodule Pooly.Server do
     GenServer.start_link(__MODULE__, pools_config, name: __MODULE__)
   end
 
-  # FIXME interpolation into atom here smells a little off.
+  # FIXME interpolation into atom here smells a little off--and doing
+  # so led to a difficult-to-catch bug based on a typo.
   # However, note that this is representative of someone else's mistakes,
   # and is a reminder that GenServer.call/3's first argument _must be an atom_.
   def checkout(pool_name), do: GenServer.call(:"#{pool_name}Server", :checkout)
