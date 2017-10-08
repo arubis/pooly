@@ -5,11 +5,20 @@ defmodule Pooly do
     pools_config =
       [
         [name: "Pool1",
-         mfa: {SampleWorker, :start_link, []}, size: 2],
+         mfa: {SampleWorker, :start_link, []},
+         size: 2,
+         max_overflow: 3,
+        ],
         [name: "Pool2",
-         mfa: {SampleWorker, :start_link, []}, size: 3],
+         mfa: {SampleWorker, :start_link, []},
+         size: 3,
+         max_overflow: 0,
+        ],
         [name: "Pool3",
-         mfa: {SampleWorker, :start_link, []}, size: 4],
+         mfa: {SampleWorker, :start_link, []},
+         size: 4,
+         max_overflow: 0
+        ],
       ]
 
     start_pools(pools_config)

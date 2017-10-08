@@ -4,9 +4,10 @@ defmodule Pooly.PoolServer do
 
   defmodule State do
     defstruct pool_sup: nil, worker_sup: nil, monitors: nil, size: nil,
-      workers: nil, name: nil, mfa: nil
+      workers: nil, name: nil, mfa: nil, max_overflow: nil, overflow: nil
     @type t :: %State{pool_sup: pid, worker_sup: pid, size: non_neg_integer,
-                      workers: list, name: list, monitors: list, mfa: {any, any, any}}
+                      workers: list, name: list, monitors: list, mfa: {any, any, any},
+                      max_overflow: non_neg_integer, overflow: non_neg_integer}
   end
 
   # API
@@ -48,6 +49,7 @@ defmodule Pooly.PoolServer do
   ## Pattern match for `size` options:
   def init([{:size, size}|tail], state), do: init(tail, %{state | size: size})
   ## Options list empty, so assume state is built up
+  def init([{:max_overflow, max_overflow}|tail], state), do: init(tail, %{state | max_overflow: max_overflow})
   def init([], state) do
     send(self(), :start_worker_supervisor)
     {:ok, state}
