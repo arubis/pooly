@@ -29,7 +29,7 @@ defmodule Pooly do
   def start_pools(pools_config), do: Pooly.Supervisor.start_link(pools_config)
 
   def checkout(pool_name, block \\ true, timeout \\ @timeout) do
-    Pooly.Server.checkout(pool_name)
+    Pooly.Server.checkout(pool_name, block, timeout)
   end
 
   def checkin(pool_name, worker_pid), do: Pooly.Server.checkin(pool_name, worker_pid)

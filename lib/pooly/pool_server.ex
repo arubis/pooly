@@ -80,7 +80,7 @@ defmodule Pooly.PoolServer do
 
   ## this may be redundant; drop next handle_call(:checkout, ...)?
 
-  def handle_call({:checkout, block}, {from_pid, _ref}, state) do
+  def handle_call({:checkout, block}, {from_pid, _ref} = from, state) do
     %{worker_sup: worker_sup,
       workers: workers,
       monitors: monitors,
@@ -98,7 +98,7 @@ defmodule Pooly.PoolServer do
         # pretty sure this doesn't work without defining new_worker/2...
         {worker, ref} = new_worker(worker_sup, from_pid)
         true = :ets.insert(monitors, {worker, ref})
-        {reply, worker, %{state | overflow: overflow+1}}
+        {:reply, worker, %{state | overflow: overflow+1}}
 
       [] when block == true ->
         ref = Process.monitor(from_pid)
@@ -193,6 +193,13 @@ defmodule Pooly.PoolServer do
     {:ok, worker} = Supervisor.start_child(sup, [[]])
     Process.link(worker)   # Pointed out in repo; didn't see ref here in text
     worker
+  end
+
+  # Dug this out of upstream; doesn't appear in book
+  defp new_worker(sup, from_pid) do
+    pid = new_worker(sup)
+    ref = Process.monitor(from_pid)
+    {pid, ref}
   end
 
   ### revisit?
