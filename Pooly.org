@@ -13,12 +13,18 @@
    CLOSED: [2017-10-09 Mon 18:26]
     - Supports /multiple/ pools
     - Supports a /variable/ number of workers
-** TODO Version 4
+** DONE Version 4
+   CLOSED: [2017-10-11 Wed 21:37]
     - Supports /multiple/ pools
     - Supports a /variable/ number of workers
     - Variable-sized pool allows for worker overflow
     - Queuing for consumer processes when all workers are busy
-*** TODO debug cycle
+*** DONE debug cycle
+    CLOSED: [2017-10-11 Wed 21:37]
+** TODO exercises
+*** DONE implement transactions
+    CLOSED: [2017-10-18 Wed 18:59]
+*** TODO prevent multiple checkin of same worker
 ** TODO Version 5 (not in book)
     - Rewrite to use Elixir 1.5-compatible module Supervisor
     - Clean up `true = (whatever)` and `case` to use `with`

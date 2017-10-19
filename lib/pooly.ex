@@ -33,5 +33,29 @@ defmodule Pooly do
   end
 
   def checkin(pool_name, worker_pid), do: Pooly.Server.checkin(pool_name, worker_pid)
+
+  @doc ~S"""
+  Checks out a worker, hands its pid to the given function,
+  then checks the worker back in when finished.
+
+  ## Examples:
+
+      iex> Pooly.transaction("Pool1",
+      ...>   fn(worker) ->
+      ...>     send(self(), {:hello, worker})
+      ...>   end)
+      ...>
+      ...> receive do
+      ...>   {:hello, pid} when is_pid(pid) ->
+      ...>     :ok
+      ...>   _ ->
+      ...>     :error
+      ...> end
+      :ok
+
+  """
+  def transaction(pool_name, fun, timeout \\ @timeout) do
+    Pooly.Server.transaction(pool_name, fun, timeout)
+  end
   def status(pool_name), do: Pooly.Server.status(pool_name)
 end

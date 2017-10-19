@@ -156,6 +156,9 @@ defmodule Pooly.PoolServer do
 
       [[]] ->
         {:noreply, state}
+
+      [] ->
+        {:noreply, state}
     end
   end
 

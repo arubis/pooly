@@ -13,12 +13,20 @@ defmodule Pooly.Server do
   # However, note that this is representative of someone else's mistakes,
   # and is a reminder that GenServer.call/3's first argument _must be an atom_.
   def checkout(pool_name, block, timeout) do
-    # was: # GenServer.call(:"#{pool_name}Server", :checkout)
     Pooly.PoolServer.checkout(pool_name, block, timeout)
   end
 
   def checkin(pool_name, worker_pid), do: GenServer.cast(:"#{pool_name}Server", {:checkin, worker_pid})
   def status(pool_name), do: GenServer.call(:"#{pool_name}Server", :status)
+
+  def transaction(pool_name, fun, timeout) do
+    worker = checkout(pool_name, true, timeout)
+    try do
+      fun.(worker)
+    after
+      checkin(pool_name, worker)
+    end
+  end
 
   # Callbacks
 
