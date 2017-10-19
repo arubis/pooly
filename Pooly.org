@@ -9,16 +9,25 @@
     - Supports a /single/ pool
     - Supports a /fixed/ number of workers
     - Recovery when consumer and/or worker processes fail
-** TODO Version 3
+** DONE Version 3
+   CLOSED: [2017-10-09 Mon 18:26]
     - Supports /multiple/ pools
     - Supports a /variable/ number of workers
-** TODO Version 4
+** DONE Version 4
+   CLOSED: [2017-10-11 Wed 21:37]
     - Supports /multiple/ pools
     - Supports a /variable/ number of workers
     - Variable-sized pool allows for worker overflow
     - Queuing for consumer processes when all workers are busy
-** TODO Version 5 (not in book)
-    - Rewrite to use Elixir 1.5-compatible module Supervisor
-    - Clean up `true = (whatever)` and `case` to use `with`
-    - Ditch any remaining HashDict's for Maps
+*** DONE debug cycle
+    CLOSED: [2017-10-11 Wed 21:37]
+** DONE exercises
+   CLOSED: [2017-10-18 Wed 19:10]
+*** DONE implement transactions
+    CLOSED: [2017-10-18 Wed 18:59]
+*** DONE prevent multiple checkin of same worker
+    CLOSED: [2017-10-18 Wed 19:09]
+    I believe this was an editing error--the monitoring of individual worker 
+    processes prevents this scenario, just returning {:noreply, state} without 
+    side-effects when an attempt is made to check in a checked-in worker.
 
